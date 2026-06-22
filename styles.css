@@ -104,6 +104,12 @@ button {
 }
 button:hover { filter: brightness(1.07); }
 button:disabled { opacity: .6; cursor: default; }
+.btn-ghost {
+  background: #fff; color: var(--muted); border: 1px solid var(--line);
+  margin-left: 8px;
+}
+.btn-ghost:hover { filter: none; background: var(--bg); color: var(--ink); }
+.form-card.editing { border-color: var(--green); box-shadow: 0 0 0 2px var(--green-soft), var(--shadow); }
 .form-msg { margin-left: 12px; font-size: .85rem; }
 .form-msg.ok  { color: var(--ok); }
 .form-msg.err { color: var(--over); }
@@ -122,11 +128,13 @@ button:disabled { opacity: .6; cursor: default; }
 .h-prod { font-weight: 600; }
 .h-meta { font-size: .76rem; color: var(--muted); }
 .h-date { white-space: nowrap; text-align: right; font-size: .8rem; color: var(--muted); }
-.h-del {
-  background: none; color: var(--muted); border: none; padding: 4px 8px;
-  font-size: 1.1rem; cursor: pointer; width: auto; border-radius: 8px;
+.h-edit, .h-del {
+  background: none; color: var(--muted); border: none; padding: 4px 7px;
+  font-size: 1.05rem; cursor: pointer; width: auto; border-radius: 8px;
 }
+.h-edit:hover { color: var(--green); background: var(--green-soft); }
 .h-del:hover { color: var(--over); background: var(--over-bg); }
+.h-row.editing { background: var(--green-soft); border-radius: 8px; }
 
 .loading, .empty { color: var(--muted); text-align: center; padding: 18px; font-size: .9rem; }
 
