@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2f5d50" />
+  <title>🐾 Flea &amp; Tick Tracker</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐾</text></svg>" />
+</head>
+<body>
+  <header class="app-header">
+    <h1>🐾 Flea &amp; Tick Tracker</h1>
+    <p class="sub">When &amp; what each dog last took — and what's due</p>
+  </header>
+
+  <main>
+    <!-- Dashboard: one card per dog -->
+    <section id="dashboard" class="dashboard">
+      <div class="loading">Loading dogs…</div>
+    </section>
+
+    <!-- Add treatment -->
+    <section class="card form-card">
+      <h2>➕ Log a treatment</h2>
+      <form id="treatment-form">
+        <div class="row">
+          <label>Dog
+            <select id="f-dog" required></select>
+          </label>
+          <label>Date given
+            <input type="date" id="f-date" required />
+          </label>
+        </div>
+        <div class="row">
+          <label>Product
+            <select id="f-product" required></select>
+          </label>
+          <label>Repeat every (days)
+            <input type="number" id="f-interval" min="0" placeholder="e.g. 30" />
+          </label>
+        </div>
+        <div class="row">
+          <label>Dose / weight band <span class="opt">(optional)</span>
+            <input type="text" id="f-dose" placeholder="e.g. 24–60 lb chew" />
+          </label>
+          <label>Notes <span class="opt">(optional)</span>
+            <input type="text" id="f-notes" placeholder="anything to remember" />
+          </label>
+        </div>
+        <button type="submit" id="f-submit">Save treatment</button>
+        <span id="form-msg" class="form-msg"></span>
+      </form>
+    </section>
+
+    <!-- History -->
+    <section class="card">
+      <div class="history-head">
+        <h2>📋 History</h2>
+        <select id="history-filter"><option value="">All dogs</option></select>
+      </div>
+      <div id="history" class="history"><div class="loading">Loading…</div></div>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <span id="status-dot" class="dot"></span><span id="status-text">connecting…</span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
