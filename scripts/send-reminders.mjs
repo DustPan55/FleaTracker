@@ -5,7 +5,7 @@
 const SUPABASE_URL   = process.env.SUPABASE_URL;
 const SUPABASE_KEY   = process.env.SUPABASE_KEY;
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const TO             = process.env.REMIND_TO;
+const TO             = process.env.REMIND_TO; // comma-separated list of recipients
 const LEAD_DAYS      = parseInt(process.env.LEAD_DAYS || "3", 10);
 const DRY_RUN        = process.env.DRY_RUN === "1";
 const APP_URL        = "https://dustpan55.github.io/FleaTracker/";
@@ -93,13 +93,15 @@ if (DRY_RUN) {
   process.exit(0);
 }
 
+const recipients = (TO || "").split(",").map((s) => s.trim()).filter(Boolean);
+
 const res = await fetch("https://api.resend.com/emails", {
   method: "POST",
   headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
-  body: JSON.stringify({ from: "FleaTracker <onboarding@resend.dev>", to: [TO], subject, html, text }),
+  body: JSON.stringify({ from: "FleaTracker <onboarding@resend.dev>", to: recipients, subject, html, text }),
 });
 if (!res.ok) {
   console.error("Resend error:", res.status, await res.text());
   process.exit(1);
 }
-console.log(`Sent reminder for ${due.length} dog(s) to ${TO}.`);
+console.log(`Sent reminder for ${due.length} dog(s) to ${recipients.join(", ")}.`);

@@ -19,6 +19,8 @@ jobs:
           SUPABASE_URL: https://xsnjxqruybhxdandcmol.supabase.co
           SUPABASE_KEY: sb_publishable_msOG_LBZ7XNX69w14ksCEQ_sYtmV8yD
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          # Comma-separate to add more recipients — but Resend's free tier only
+          # delivers to bwangerin55@gmail.com until a domain is verified (or switch to Gmail SMTP).
           REMIND_TO: bwangerin55@gmail.com
           LEAD_DAYS: "3"
         run: node scripts/send-reminders.mjs
