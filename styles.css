@@ -86,7 +86,7 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; }
 
 /* Forms */
 .row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-.row > label { flex: 1 1 180px; display: flex; flex-direction: column; font-size: .8rem; color: var(--muted); gap: 5px; }
+.row > label { flex: 1 1 180px; min-width: 0; display: flex; flex-direction: column; font-size: .8rem; color: var(--muted); gap: 5px; }
 .opt { font-weight: 400; opacity: .7; }
 input, select, button {
   font: inherit;
@@ -98,7 +98,17 @@ input, select, button {
   background: #fff;
   color: var(--ink);
   width: 100%;
+  min-width: 0;   /* allow shrinking inside flex columns */
+  max-width: 100%;
 }
+/* iOS renders date/number inputs with an intrinsic width that overflows the
+   container — normalize their appearance so they respect width:100%. */
+input[type="date"], input[type="number"] {
+  -webkit-appearance: none;
+  appearance: none;
+  text-align: left;
+}
+input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 input:focus, select:focus { outline: 2px solid var(--green); border-color: var(--green); }
 button {
   background: var(--green); color: #fff; font-weight: 600; border: none;
