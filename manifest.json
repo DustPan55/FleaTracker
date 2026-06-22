@@ -1,0 +1,18 @@
+{
+  "name": "Flea & Tick Tracker",
+  "short_name": "Flea Tracker",
+  "description": "Track flea/tick treatments and due dates for the dogs",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f6f7f5",
+  "theme_color": "#2f5d50",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%232f5d50'/><text y='.92em' x='8' font-size='78'>🐾</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

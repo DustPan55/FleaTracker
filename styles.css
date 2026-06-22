@@ -90,7 +90,9 @@ h2 { margin: 0 0 12px; font-size: 1.05rem; }
 .opt { font-weight: 400; opacity: .7; }
 input, select, button {
   font: inherit;
-  padding: 10px 11px;
+  font-size: 16px; /* 16px prevents iOS zoom-on-focus */
+  min-height: 44px; /* comfortable touch target */
+  padding: 10px 12px;
   border: 1px solid var(--line);
   border-radius: 10px;
   background: #fff;
@@ -100,7 +102,11 @@ input, select, button {
 input:focus, select:focus { outline: 2px solid var(--green); border-color: var(--green); }
 button {
   background: var(--green); color: #fff; font-weight: 600; border: none;
-  cursor: pointer; width: auto; padding: 11px 20px;
+  cursor: pointer; width: auto; padding: 12px 22px;
+}
+.disclaimer {
+  font-size: .78rem; color: var(--soon); background: var(--soon-bg);
+  border-radius: 8px; padding: 8px 11px; margin: 4px 0 14px; line-height: 1.4;
 }
 button:hover { filter: brightness(1.07); }
 button:disabled { opacity: .6; cursor: default; }
@@ -129,8 +135,9 @@ button:disabled { opacity: .6; cursor: default; }
 .h-meta { font-size: .76rem; color: var(--muted); }
 .h-date { white-space: nowrap; text-align: right; font-size: .8rem; color: var(--muted); }
 .h-edit, .h-del {
-  background: none; color: var(--muted); border: none; padding: 4px 7px;
-  font-size: 1.05rem; cursor: pointer; width: auto; border-radius: 8px;
+  background: none; color: var(--muted); border: none; padding: 0;
+  font-size: 1.15rem; cursor: pointer; width: 40px; min-height: 40px;
+  border-radius: 8px; flex: none;
 }
 .h-edit:hover { color: var(--green); background: var(--green-soft); }
 .h-del:hover { color: var(--over); background: var(--over-bg); }
@@ -142,7 +149,7 @@ button:disabled { opacity: .6; cursor: default; }
 .app-footer {
   position: fixed; bottom: 0; left: 0; right: 0;
   background: #fff; border-top: 1px solid var(--line);
-  padding: 8px 14px; font-size: .75rem; color: var(--muted);
+  padding: 8px 14px calc(8px + env(safe-area-inset-bottom)); font-size: .75rem; color: var(--muted);
   display: flex; align-items: center; gap: 7px;
 }
 .dot { width: 9px; height: 9px; border-radius: 50%; background: #bbb; }
