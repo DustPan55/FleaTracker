@@ -1,0 +1,24 @@
+name: Dose reminders
+
+on:
+  schedule:
+    # 13:00 UTC daily ≈ 8am ET / 7am CT. Adjust the hour to taste.
+    - cron: "0 13 * * *"
+  workflow_dispatch: {} # lets you run it on demand from the Actions tab
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Send due-dose reminders
+        env:
+          SUPABASE_URL: https://xsnjxqruybhxdandcmol.supabase.co
+          SUPABASE_KEY: sb_publishable_msOG_LBZ7XNX69w14ksCEQ_sYtmV8yD
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          REMIND_TO: bwangerin55@gmail.com
+          LEAD_DAYS: "3"
+        run: node scripts/send-reminders.mjs
