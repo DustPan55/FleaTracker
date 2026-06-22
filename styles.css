@@ -177,8 +177,15 @@ button:disabled { opacity: .6; cursor: default; }
 .dot.ok { background: var(--ok); }
 .dot.err { background: var(--over); }
 
-@media (max-width: 480px) {
-  .app-header h1 { font-size: 1.25rem; }
-  .dashboard { grid-template-columns: 1fr 1fr; }
-  .dog-name { font-size: 1rem; }
+@media (max-width: 560px) {
+  .app-header h1 { font-size: 1.3rem; }
+  /* Full-width cards on phones so nothing gets cramped */
+  .dashboard { grid-template-columns: 1fr; }
+  .inv-list { grid-template-columns: 1fr; }
+  .h-dog { min-width: 62px; }
 }
+
+/* Keep the dog name and status badge on one comfortable row */
+.dog-top { gap: 10px; }
+.dog-name { overflow-wrap: anywhere; }
+.badge { flex: none; }
