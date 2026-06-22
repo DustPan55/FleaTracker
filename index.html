@@ -70,6 +70,44 @@
       </form>
     </section>
 
+    <!-- Inventory -->
+    <section class="card" id="inventory-card">
+      <div class="history-head">
+        <h2>📦 Inventory</h2>
+        <button type="button" id="inv-add-btn" class="btn-ghost">+ Add stock</button>
+      </div>
+      <form id="inv-form" hidden>
+        <div class="row">
+          <label>Product
+            <select id="i-product" required></select>
+          </label>
+          <label>Dosage / band <span class="opt">(optional)</span>
+            <select id="i-dosage"></select>
+          </label>
+        </div>
+        <div class="row">
+          <label>Units per box
+            <input type="number" id="i-qty" min="1" inputmode="numeric" placeholder="e.g. 6" required />
+          </label>
+          <label>Cost per box ($) <span class="opt">(optional)</span>
+            <input type="number" id="i-cost" min="0" step="0.01" inputmode="decimal" placeholder="e.g. 89.99" />
+          </label>
+        </div>
+        <div class="row">
+          <label>Boxes bought <span class="opt">(total)</span>
+            <input type="number" id="i-boxes" min="0" step="1" value="1" inputmode="numeric" />
+          </label>
+          <label>Alert when ≤
+            <input type="number" id="i-threshold" min="0" step="1" value="1" inputmode="numeric" />
+          </label>
+        </div>
+        <button type="submit" id="i-submit">Save stock</button>
+        <button type="button" id="i-cancel" class="btn-ghost">Cancel</button>
+        <span id="inv-msg" class="form-msg"></span>
+      </form>
+      <div id="inventory" class="inv-list"><div class="loading">Loading…</div></div>
+    </section>
+
     <!-- History -->
     <section class="card">
       <div class="history-head">

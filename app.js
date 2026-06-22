@@ -12,7 +12,9 @@
   let products = [];
   let doses = [];       // standard weight-band dosing options
   let treatments = [];
-  let editingId = null; // id of the treatment being edited, or null
+  let inventory = [];
+  let editingId = null;    // id of the treatment being edited, or null
+  let editingInvId = null; // id of the inventory line being edited, or null
 
   // ---- elements ----
   const $ = (id) => document.getElementById(id);
@@ -34,6 +36,19 @@
   const formTitle = $("form-title");
   const formMsg = $("form-msg");
   const historyFilter = $("history-filter");
+  // inventory
+  const inventoryEl = $("inventory");
+  const invForm = $("inv-form");
+  const invAddBtn = $("inv-add-btn");
+  const iProduct = $("i-product");
+  const iDosage = $("i-dosage");
+  const iQty = $("i-qty");
+  const iCost = $("i-cost");
+  const iBoxes = $("i-boxes");
+  const iThreshold = $("i-threshold");
+  const iSubmit = $("i-submit");
+  const iCancel = $("i-cancel");
+  const invMsg = $("inv-msg");
 
   // ---- helpers ----
   const todayISO = () => new Date().toISOString().slice(0, 10);
@@ -165,15 +180,15 @@
   }
 
   // ---- dosage handling ----
-  function buildDosageOptions(productName) {
+  function buildDosageOptions(productName, selectEl, includeOther) {
     const opts = dosesFor(productName);
     let html = '<option value="">— none / not sure —</option>';
     html += opts.map((d) => {
       const label = doseLabel(d);
       return `<option value="${label}" data-min="${d.weight_min ?? ""}" data-max="${d.weight_max ?? ""}">${label}</option>`;
     }).join("");
-    html += `<option value="${OTHER}">Other / type in…</option>`;
-    fDosage.innerHTML = html;
+    if (includeOther) html += `<option value="${OTHER}">Other / type in…</option>`;
+    selectEl.innerHTML = html;
   }
 
   // Auto-pick the band matching the entered weight, if any
@@ -197,7 +212,7 @@
 
   function onProductChange() {
     syncIntervalFromProduct();
-    buildDosageOptions(fProduct.value);
+    buildDosageOptions(fProduct.value, fDosage, true);
     suggestDosageFromWeight();
     toggleCustomDose();
   }
@@ -216,24 +231,28 @@
 
   // ---- data ops ----
   async function loadAll() {
-    const [dRes, pRes, doseRes, tRes] = await Promise.all([
+    const [dRes, pRes, doseRes, tRes, invRes] = await Promise.all([
       sb.from("flea_dogs").select("*").order("sort_order"),
       sb.from("flea_products").select("*").eq("active", true).order("name"),
       sb.from("flea_product_doses").select("*"),
       sb.from("flea_treatments").select("*"),
+      sb.from("flea_inventory").select("*"),
     ]);
-    if (dRes.error || pRes.error || doseRes.error || tRes.error) {
+    if (dRes.error || pRes.error || doseRes.error || tRes.error || invRes.error) {
       setStatus(false, "Could not load data — check connection.");
-      console.error(dRes.error || pRes.error || doseRes.error || tRes.error);
+      console.error(dRes.error || pRes.error || doseRes.error || tRes.error || invRes.error);
       return;
     }
     dogs = dRes.data;
     products = pRes.data;
     doses = doseRes.data;
     treatments = tRes.data;
+    inventory = invRes.data;
     fillSelects();
+    fillInvProduct();
     renderDashboard();
     renderHistory();
+    renderInventory();
     setStatus(true, `${dogs.length} dogs · ${treatments.length} treatments logged`);
   }
 
@@ -285,6 +304,7 @@
     }
     renderDashboard();
     renderHistory();
+    renderInventory();
     setStatus(true, `${dogs.length} dogs · ${treatments.length} treatments logged`);
     setTimeout(() => { formMsg.textContent = ""; formMsg.className = "form-msg"; }, 4000);
   }
@@ -309,7 +329,7 @@
     fWeight.value = t.weight_lbs ?? "";
 
     // dosage: match a known band, else fall back to custom text
-    buildDosageOptions(t.product_name);
+    buildDosageOptions(t.product_name, fDosage, true);
     if (t.dose && Array.from(fDosage.options).some((o) => o.value === t.dose)) {
       fDosage.value = t.dose;
     } else if (t.dose) {
@@ -356,7 +376,150 @@
     if (editingId === id) cancelEdit();
     renderDashboard();
     renderHistory();
+    renderInventory();
     setStatus(true, `${dogs.length} dogs · ${treatments.length} treatments logged`);
+  }
+
+  // ---- inventory ----
+  // Units used from a stock line = treatments matching its product + dose
+  function invUsed(inv) {
+    return treatments.filter((t) =>
+      t.product_name === inv.product_name && (t.dose || "") === (inv.dose || "")
+    ).length;
+  }
+
+  function fillInvProduct() {
+    iProduct.innerHTML = products.map((p) => `<option value="${p.name}">${p.name}</option>`).join("");
+    buildDosageOptions(iProduct.value, iDosage, false);
+  }
+
+  function renderInventory() {
+    if (!inventory.length) {
+      inventoryEl.innerHTML = '<div class="empty">No stock tracked yet — tap “+ Add stock”.</div>';
+      return;
+    }
+    inventoryEl.innerHTML = inventory
+      .slice()
+      .sort((a, b) => a.product_name.localeCompare(b.product_name) || (a.dose || "").localeCompare(b.dose || ""))
+      .map((inv) => {
+        const purchased = (Number(inv.qty_per_box) || 0) * (Number(inv.boxes_purchased) || 0);
+        const used = invUsed(inv);
+        const onHand = purchased - used;
+        const low = onHand <= (inv.low_threshold ?? 0);
+        const perUnit = inv.cost_per_box != null && inv.qty_per_box
+          ? `~$${(inv.cost_per_box / inv.qty_per_box).toFixed(2)} each` : null;
+        const costLine = [
+          inv.cost_per_box != null ? `$${Number(inv.cost_per_box).toFixed(2)}/box` : null,
+          perUnit,
+        ].filter(Boolean).join(" · ");
+        return `
+          <div class="inv-item ${low ? "low" : ""}">
+            <div class="inv-top">
+              <div>
+                <div class="inv-name">${inv.product_name}</div>
+                ${inv.dose ? `<div class="inv-dose">${inv.dose}</div>` : ""}
+              </div>
+              <span class="badge ${low ? "over" : "ok"}">${low ? "Need more" : "In stock"}</span>
+            </div>
+            <div class="inv-stats">
+              <span class="inv-onhand">${Math.max(0, onHand)}</span>
+              <span class="inv-sub">left · of ${purchased} bought · ${used} used</span>
+            </div>
+            ${costLine ? `<div class="inv-cost">${costLine}</div>` : ""}
+            <div class="inv-actions">
+              <button class="inv-restock" data-id="${inv.id}">+1 box</button>
+              <button class="inv-edit" data-id="${inv.id}">✏️ Edit</button>
+              <button class="inv-del" data-id="${inv.id}" title="Delete">🗑</button>
+            </div>
+          </div>`;
+      }).join("");
+    inventoryEl.querySelectorAll(".inv-restock").forEach((b) => b.addEventListener("click", () => restock(b.dataset.id)));
+    inventoryEl.querySelectorAll(".inv-edit").forEach((b) => b.addEventListener("click", () => startInvEdit(b.dataset.id)));
+    inventoryEl.querySelectorAll(".inv-del").forEach((b) => b.addEventListener("click", () => deleteInventory(b.dataset.id)));
+  }
+
+  function openInvForm() { invForm.hidden = false; invAddBtn.hidden = true; }
+
+  function closeInvForm() {
+    invForm.hidden = true;
+    invAddBtn.hidden = false;
+    editingInvId = null;
+    invForm.reset();
+    iBoxes.value = "1";
+    iThreshold.value = "1";
+    buildDosageOptions(iProduct.value, iDosage, false);
+    iSubmit.textContent = "Save stock";
+    invMsg.textContent = "";
+    invMsg.className = "form-msg";
+  }
+
+  async function submitInv(e) {
+    e.preventDefault();
+    iSubmit.disabled = true;
+    invMsg.className = "form-msg";
+    invMsg.textContent = "";
+    const record = {
+      product_name: iProduct.value,
+      dose: iDosage.value || null,
+      qty_per_box: parseInt(iQty.value, 10) || 1,
+      cost_per_box: iCost.value === "" ? null : parseFloat(iCost.value),
+      boxes_purchased: iBoxes.value === "" ? 0 : parseFloat(iBoxes.value),
+      low_threshold: iThreshold.value === "" ? 0 : parseInt(iThreshold.value, 10),
+    };
+    let data, error;
+    if (editingInvId) {
+      ({ data, error } = await sb.from("flea_inventory").update(record).eq("id", editingInvId).select().single());
+    } else {
+      ({ data, error } = await sb.from("flea_inventory").insert(record).select().single());
+    }
+    iSubmit.disabled = false;
+    if (error) { invMsg.className = "form-msg err"; invMsg.textContent = "Error: " + error.message; return; }
+    if (editingInvId) {
+      const i = inventory.findIndex((x) => x.id === editingInvId);
+      if (i !== -1) inventory[i] = data;
+    } else {
+      inventory.push(data);
+    }
+    closeInvForm();
+    renderInventory();
+  }
+
+  function startInvEdit(id) {
+    const inv = inventory.find((x) => x.id === id);
+    if (!inv) return;
+    editingInvId = id;
+    openInvForm();
+    selectOrAdd(iProduct, inv.product_name);
+    buildDosageOptions(inv.product_name, iDosage, false);
+    if (inv.dose) selectOrAdd(iDosage, inv.dose); else iDosage.value = "";
+    iQty.value = inv.qty_per_box;
+    iCost.value = inv.cost_per_box ?? "";
+    iBoxes.value = inv.boxes_purchased;
+    iThreshold.value = inv.low_threshold;
+    iSubmit.textContent = "Update stock";
+    invForm.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  async function restock(id) {
+    const inv = inventory.find((x) => x.id === id);
+    if (!inv) return;
+    const { data, error } = await sb.from("flea_inventory")
+      .update({ boxes_purchased: Number(inv.boxes_purchased) + 1 }).eq("id", id).select().single();
+    if (error) { alert("Could not restock: " + error.message); return; }
+    const i = inventory.findIndex((x) => x.id === id);
+    if (i !== -1) inventory[i] = data;
+    renderInventory();
+  }
+
+  async function deleteInventory(id) {
+    const inv = inventory.find((x) => x.id === id);
+    if (!inv) return;
+    if (!confirm(`Delete inventory for ${inv.product_name}${inv.dose ? " (" + inv.dose + ")" : ""}?`)) return;
+    const { error } = await sb.from("flea_inventory").delete().eq("id", id);
+    if (error) { alert("Could not delete: " + error.message); return; }
+    inventory = inventory.filter((x) => x.id !== id);
+    if (editingInvId === id) closeInvForm();
+    renderInventory();
   }
 
   // ---- wire up ----
@@ -367,6 +530,11 @@
   historyFilter.addEventListener("change", renderHistory);
   form.addEventListener("submit", submitForm);
   fCancel.addEventListener("click", cancelEdit);
+
+  invAddBtn.addEventListener("click", openInvForm);
+  iCancel.addEventListener("click", closeInvForm);
+  iProduct.addEventListener("change", () => buildDosageOptions(iProduct.value, iDosage, false));
+  invForm.addEventListener("submit", submitInv);
 
   loadAll();
 })();

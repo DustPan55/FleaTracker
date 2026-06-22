@@ -143,6 +143,27 @@ button:disabled { opacity: .6; cursor: default; }
 .h-del:hover { color: var(--over); background: var(--over-bg); }
 .h-row.editing { background: var(--green-soft); border-radius: 8px; }
 
+/* Inventory */
+.inv-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.inv-item {
+  border: 1px solid var(--line); border-left: 5px solid var(--ok);
+  border-radius: 12px; padding: 12px 14px; background: var(--card);
+}
+.inv-item.low { border-left-color: var(--over); background: var(--over-bg); }
+.inv-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.inv-name { font-weight: 700; font-size: 1.02rem; }
+.inv-dose { font-size: .76rem; color: var(--muted); }
+.inv-stats { margin: 8px 0 2px; display: flex; align-items: baseline; gap: 8px; }
+.inv-onhand { font-size: 1.6rem; font-weight: 800; line-height: 1; }
+.inv-item.low .inv-onhand { color: var(--over); }
+.inv-sub { font-size: .78rem; color: var(--muted); }
+.inv-cost { font-size: .8rem; color: var(--ink); margin-top: 2px; }
+.inv-actions { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+.inv-actions button { padding: 7px 12px; min-height: 38px; font-size: .85rem; }
+.inv-restock { background: var(--green); color: #fff; }
+.inv-edit, .inv-del { background: #fff; color: var(--muted); border: 1px solid var(--line); }
+.inv-del:hover { color: var(--over); border-color: var(--over); }
+
 .loading, .empty { color: var(--muted); text-align: center; padding: 18px; font-size: .9rem; }
 
 /* Footer status */
